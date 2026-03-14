@@ -1,0 +1,3 @@
+<div class="mb-2"><label>Nombre</label><input name="name" value="{{ old('name',$role->name ?? '') }}" class="form-control"></div>
+<div class="mb-2"><label>Descripción</label><input name="description" value="{{ old('description',$role->description ?? '') }}" class="form-control"></div>
+<div class="mb-2"><label>Permisos</label>@foreach($permissions as $p)<div class="form-check"><input type="checkbox" class="form-check-input" name="permissions[]" value="{{ $p->id }}" @checked(in_array($p->id, old('permissions', isset($role)?$role->permissions->pluck('id')->toArray():[])))><label class="form-check-label">{{ $p->name }}</label></div>@endforeach</div>
