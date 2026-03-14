@@ -53,3 +53,54 @@ Eso permite saber qué sede/equipo envió cada marcación y evitar mezcla de cre
 - Si el tráfico sale a internet pública o atraviesa redes no confiables, usa `https://`.
 
 Recomendación: en producción, migra a HTTPS cuando sea posible.
+
+## Instalación en la PC puente (resumen práctico)
+
+No necesitas clonar TODO el proyecto Laravel en la PC puente.
+Para el agente local solo necesitas PHP y la carpeta `device_agent`.
+
+### 1) ¿Qué instalar en la PC puente?
+
+- PHP CLI (recomendado 8.x).
+- Extensiones comunes de PHP (`curl`, `json`, `mbstring`) si tu instalación no las trae por defecto.
+- Conectividad de red hacia:
+  - el huellero (puerto 4370 normalmente),
+  - la API central (`api_url` que pongas en config).
+
+### 2) ¿Qué archivos copiar?
+
+Copia la carpeta `device_agent` a una ruta fija, por ejemplo:
+
+```bash
+/opt/asistencia/device_agent
+```
+
+Dentro de esa carpeta deben existir al menos:
+
+- `config.php`
+- `sync.php`
+
+### 3) ¿Dónde registrar los huelleros?
+
+En `device_agent/config.php`, dentro de `devices[]`.
+Sí, es 1 bloque por huellero y cada uno con su `api_key` propia.
+
+### 4) ¿Cómo se ejecuta la sincronización?
+
+Con cron, apuntando a la ruta real donde dejaste `sync.php`:
+
+```bash
+* * * * * /usr/bin/php /opt/asistencia/device_agent/sync.php >/dev/null 2>&1
+```
+
+Eso ejecuta la sincronización cada minuto.
+
+### 5) Verificación rápida
+
+- Ejecuta manualmente una vez:
+
+```bash
+php /opt/asistencia/device_agent/sync.php
+```
+
+- Si ves errores de conexión, revisa IP/puertos/API key y firewall.
