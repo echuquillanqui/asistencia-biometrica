@@ -14,6 +14,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
+Route::view('/manuales/servidor-principal', 'manuales.servidor-principal')->name('manual.main-server');
+Route::view('/manuales/sedes', 'manuales.sedes')->name('manual.branches');
+
 Auth::routes();
 
 Route::middleware('auth')->group(function () {
