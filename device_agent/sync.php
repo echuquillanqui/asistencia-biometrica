@@ -4,13 +4,55 @@ $config = require __DIR__.'/config.php';
 
 function fetchDeviceLogs(array $config): array
 {
-    // Stub: integrar librería ZKTeco real (UDP/TCP SDK) en producción.
-    return [[
-        'user_id' => '1',
-        'fingerprint_id' => '1',
-        'check_time' => date('Y-m-d H:i:s'),
-        'status' => 'ok',
-    ]];
+    $libraryPath = dirname(__DIR__).'/app/Libraries/zklibrary.php';
+
+    if (!file_exists($libraryPath)) {
+        file_put_contents(__DIR__.'/agent-error.log', date('c')." ERROR: ZKLibrary no encontrada en {$libraryPath}\n", FILE_APPEND);
+        return [];
+    }
+
+    require_once $libraryPath;
+
+    $zk = new ZKLibrary($config['device_ip'], (int) $config['device_port']);
+    $connected = $zk->connect();
+
+    if (!$connected) {
+        file_put_contents(__DIR__.'/agent-error.log', date('c')." ERROR: No fue posible conectar al dispositivo {$config['device_ip']}:{$config['device_port']}\n", FILE_APPEND);
+        return [];
+    }
+
+    $logs = [];
+
+    try {
+        $zk->disableDevice();
+        $attendanceLogs = $zk->getAttendance();
+
+        if (!is_array($attendanceLogs)) {
+            return [];
+        }
+
+        foreach ($attendanceLogs as $entry) {
+            if (!is_array($entry) || count($entry) < 4) {
+                continue;
+            }
+
+            [$uid, $userId, $state, $timestamp] = $entry;
+
+            $logs[] = [
+                'uid' => (string) $uid,
+                'user_id' => (string) $userId,
+                'fingerprint_id' => (string) $userId,
+                'check_time' => date('Y-m-d H:i:s', (int) $timestamp),
+                'status' => (string) $state,
+                'source' => 'zklibrary',
+            ];
+        }
+    } finally {
+        $zk->enableDevice();
+        $zk->disconnect();
+    }
+
+    return $logs;
 }
 
 function sendToCentral(string $url, string $apiKey, array $logs): void
