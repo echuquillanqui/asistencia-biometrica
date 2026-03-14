@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -11,12 +10,6 @@ class AuthServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        Gate::before(function ($user, string $ability) {
-            if (method_exists($user, 'hasPermission') && $user->hasPermission($ability)) {
-                return true;
-            }
-
-            return null;
-        });
+        // Policies can be registered here.
     }
 }

@@ -9,9 +9,7 @@ class CheckPermission
 {
     public function handle(Request $request, Closure $next, string $permission)
     {
-        $user = $request->user();
-
-        if (!$user || !$user->hasPermission($permission)) {
+        if (!$request->user()?->can($permission)) {
             abort(403, 'No tiene permisos suficientes.');
         }
 
