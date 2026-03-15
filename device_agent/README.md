@@ -6,6 +6,12 @@ Ejecuta cada minuto por cron:
 * * * * * /usr/bin/php /ruta/proyecto/device_agent/sync.php >/dev/null 2>&1
 ```
 
+En Windows (Task Scheduler), usa una tarea programada cada 1 minuto con una acción de este tipo:
+
+```bat
+"C:\xampp\php\php.exe" "C:\asistencia\device_agent\sync.php"
+```
+
 El agente realiza dos tareas:
 
 1. Descarga logs del biométrico y los sincroniza contra la API central usando `X-DEVICE-API-KEY`.
@@ -95,6 +101,24 @@ Con cron, apuntando a la ruta real donde dejaste `sync.php`:
 
 Eso ejecuta la sincronización cada minuto.
 
+#### Alternativa en Windows (sin cron)
+
+1. Abre **Programador de tareas** (`taskschd.msc`).
+2. Crea una tarea: **Asistencia Biometrica Sync**.
+3. En **Desencadenadores**: iniciar *diariamente* y en "Configuración avanzada" repetir tarea **cada 1 minuto** durante **indefinidamente**.
+4. En **Acciones**:
+   - Programa o script: `C:\xampp\php\php.exe`
+   - Agregar argumentos: `"C:\asistencia\device_agent\sync.php"`
+   - Iniciar en (opcional): `C:\asistencia\device_agent`
+5. En **Condiciones**: desactiva "Iniciar la tarea solo si el equipo está conectado a corriente" si la PC es mini-PC/UPS.
+6. En **Configuración**: habilita "Ejecutar la tarea lo antes posible después de un inicio programado omitido".
+
+Para una creación rápida por consola (como Administrador):
+
+```bat
+schtasks /Create /SC MINUTE /MO 1 /TN "AsistenciaBiometricaSync" /TR "\"C:\xampp\php\php.exe\" \"C:\asistencia\device_agent\sync.php\"" /F
+```
+
 ### 5) Verificación rápida
 
 - Ejecuta manualmente una vez:
@@ -104,3 +128,30 @@ php /opt/asistencia/device_agent/sync.php
 ```
 
 - Si ves errores de conexión, revisa IP/puertos/API key y firewall.
+
+//CONSIDERAR ESTO
+
+Summary
+
+Te dejé documentado exactamente qué archivos configurar en la PC de sede y cómo ejecutar la sincronización automática en Windows/XAMPP (Task Scheduler), además del modo Linux con cron. Esto quedó en device_agent/README.md con pasos y comando schtasks listos para usar.
+
+También actualicé el manual interno de sedes para que en la app quede claro el flujo de Linux vs Windows (programa C:\xampp\php\php.exe, argumentos del sync.php, frecuencia cada 1 minuto).
+
+Para la configuración en sede, el archivo clave sigue siendo device_agent/config.php: ahí registras cada huellero en devices[] con su device_ip, device_port, api_url (tu IP VPN + /api/device) y api_key única por equipo.
+
+Cómo hacerlo en la PC de sede (resumen práctico)
+
+Copia carpeta device_agent en una ruta fija (ej. C:\asistencia\device_agent).
+
+Edita device_agent/config.php y completa cada dispositivo en devices[] (uno por huellero).
+
+En api_url usa tu servidor por VPN, por ejemplo:
+http://26.109.74.146:8080/api/device (no localhost en la sede).
+
+Programa ejecución cada minuto:
+
+Linux: cron * * * * * /usr/bin/php /ruta/.../sync.php
+
+Windows/XAMPP: Task Scheduler con C:\xampp\php\php.exe y argumento "C:\asistencia\device_agent\sync.php"
+
+Prueba manual una vez con PHP CLI para validar conexión/API key.

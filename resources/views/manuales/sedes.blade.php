@@ -39,10 +39,18 @@
 
     <h2>3) Activar sincronización automática</h2>
     <ol>
-        <li>Configurar cron para ejecutar cada minuto:</li>
+        <li>Configurar cron para ejecutar cada minuto (Linux):</li>
     </ol>
     <pre class="bg-light p-3 rounded"><code>* * * * * /usr/bin/php /ruta/proyecto/device_agent/sync.php >/dev/null 2>&1</code></pre>
+
     <ol start="2">
+        <li>Si la sede usa Windows + XAMPP, crear una tarea programada cada minuto:</li>
+    </ol>
+    <pre class="bg-light p-3 rounded"><code>Programa/script: C:\xampp\php\php.exe
+Argumentos: "C:\asistencia\device_agent\sync.php"
+Frecuencia: cada 1 minuto (indefinidamente)</code></pre>
+
+    <ol start="3">
         <li>Esto enviará marcaciones y actualizará empleados activos periódicamente.</li>
     </ol>
 
